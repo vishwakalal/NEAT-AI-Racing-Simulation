@@ -5,6 +5,8 @@ def scale(img, factor):
     size = round(img.get_width() * factor), round(img.get_height() * factor)
     return pygame.transform.scale(img, size)
 
+CAR = scale(pygame.image.load('imgs/car.png'),0.18)
+
 #rotating image about its center
 def rotate_center(screen, img, top_left, angle):
     rotated = pygame.transform.rotate(img, angle)
