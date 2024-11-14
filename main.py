@@ -18,7 +18,7 @@ pygame.display.set_caption("riyas a bitch")
 
 FPS = 60
 
-
+#draws images onto screen
 def draw(screen, images, player):
     for img, pos in images:
         screen.blit(img, pos)
@@ -30,10 +30,8 @@ def draw(screen, images, player):
 run = True
 clock = pygame.time.Clock()
 images = [(GRASS, (0,0)), (TRACK, (0,0))]
-player = Car(4,4)
+player = Car(4,2)
 
-
-pygame.display.update()
 
 while run:
     clock.tick(FPS)
@@ -44,4 +42,16 @@ while run:
         if event.type == pygame.QUIT:
             run = False
             break
+
+    keys = pygame.key.get_pressed()
+    moving = False
+    if keys[pygame.K_a]:
+        player.rotate(left = True)
+    elif keys[pygame.K_d]:
+        player.rotate(right = True)
+    elif keys[pygame.K_w]:
+        moving = True
+        player.accelerate()
+    if not moving:
+        player.decelerate()
 pygame.quit()
