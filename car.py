@@ -32,6 +32,9 @@ class Car:
     def accelerate(self):
         self.vel = min(self.vel + self.acceleration, self.max_vel)
         self.move()
+    def backwards(self):
+        self.vel = max(self.vel - self.acceleration, -self.max_vel/2)
+        self.move()
 
     def decelerate(self):
         self.vel = max(self.vel - self.acceleration/2, 0)

@@ -26,6 +26,21 @@ def draw(screen, images, player):
     player.draw_car(screen)
     pygame.display.update()
 
+def move_car(player):
+    keys = pygame.key.get_pressed()
+    moving = False
+    if keys[pygame.K_a]:
+        player.rotate(left=True)
+    elif keys[pygame.K_d]:
+        player.rotate(right=True)
+    elif keys[pygame.K_w]:
+        moving = True
+        player.accelerate()
+    elif keys[pygame.K_s]:
+        moving = True
+        player.backwards()
+    if not moving:
+        player.decelerate()
 
 run = True
 clock = pygame.time.Clock()
@@ -43,15 +58,5 @@ while run:
             run = False
             break
 
-    keys = pygame.key.get_pressed()
-    moving = False
-    if keys[pygame.K_a]:
-        player.rotate(left = True)
-    elif keys[pygame.K_d]:
-        player.rotate(right = True)
-    elif keys[pygame.K_w]:
-        moving = True
-        player.accelerate()
-    if not moving:
-        player.decelerate()
+    move_car(player)
 pygame.quit()
