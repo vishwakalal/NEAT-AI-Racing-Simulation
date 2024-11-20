@@ -8,13 +8,16 @@ import math
 GRASS = scale(pygame.image.load('imgs/grass.jpg'), 2.5)
 TRACK = scale(pygame.image.load('imgs/track.png'), 0.9)
 BORDER = scale(pygame.image.load('imgs/track-border.png'),0.9)
+BORDER_MASK = pygame.mask.from_surface(BORDER)
 FINISH = pygame.image.load('imgs/finish.png')
+FINISH_MASK = pygame.mask.from_surface(FINISH)
+FINISH_POS = (130,250)
 
 
 #initalizing window
 WIDTH, HEIGHT = TRACK.get_width(), TRACK.get_height()
 SCREEN = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("riyas a bitch")
+pygame.display.set_caption("riyas a blackie")
 
 FPS = 60
 
@@ -44,8 +47,8 @@ def move_car(player):
 
 run = True
 clock = pygame.time.Clock()
-images = [(GRASS, (0,0)), (TRACK, (0,0))]
-player = Car(4,2)
+images = [(GRASS, (0,0)), (TRACK, (0,0)), (FINISH, FINISH_POS), (BORDER, (0,0))]
+player = Car(8,3)
 
 
 while run:
@@ -59,4 +62,14 @@ while run:
             break
 
     move_car(player)
+
+    if player.collide(BORDER_MASK) != None:
+        player.bounce()
+    finish_poi_collide = player.collide(FINISH_MASK, *FINISH_POS)
+    if finish_poi_collide != None:
+         if finish_poi_collide[1] == 0:
+             player.bounce()
+         else:
+             player.reset()
+             print("finsish")
 pygame.quit()
