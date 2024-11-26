@@ -13,3 +13,10 @@ def rotate_center(win, image, top_left, angle):
     win.blit(rotated_image, new_rect.topleft)
 
 CAR = scale(pygame.image.load('imgs/car.png'),0.12)
+GRASS = scale(pygame.image.load('imgs/grass.jpg'), 2.5)
+TRACK = scale(pygame.image.load('imgs/track.png'), 0.9)
+BORDER = scale(pygame.image.load('imgs/track-border.png'),0.9)
+BORDER_MASK = pygame.mask.from_surface(BORDER)
+FINISH = pygame.image.load('imgs/finish.png')
+FINISH_MASK = pygame.mask.from_surface(FINISH)
+FINISH_POS = (130,250)

@@ -1,35 +1,43 @@
+import sys
 from utils import *
 from car import*
 import pygame
-import neat
 import os
+import neat
 import time
 import math
 
-#loading and scaling images
-GRASS = scale(pygame.image.load('imgs/grass.jpg'), 2.5)
-TRACK = scale(pygame.image.load('imgs/track.png'), 0.9)
-BORDER = scale(pygame.image.load('imgs/track-border.png'),0.9)
-BORDER_MASK = pygame.mask.from_surface(BORDER)
-FINISH = pygame.image.load('imgs/finish.png')
-FINISH_MASK = pygame.mask.from_surface(FINISH)
-FINISH_POS = (130,250)
+current_gen = 0
+    #loading and scaling images
+    # GRASS = scale(pygame.image.load('imgs/grass.jpg'), 2.5)
+    # TRACK = scale(pygame.image.load('imgs/track.png'), 0.9)
+    # BORDER = scale(pygame.image.load('imgs/track-border.png'),0.9)
+    # BORDER_MASK = pygame.mask.from_surface(BORDER)
+    # FINISH = pygame.image.load('imgs/finish.png')
+    # FINISH_MASK = pygame.mask.from_surface(FINISH)
+    # FINISH_POS = (130,250)
 
 
-#initalizing window
-WIDTH, HEIGHT = TRACK.get_width(), TRACK.get_height()
-SCREEN = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("riyas a blackie")
+    #initalizing window
+def initialize():
+    pygame.init()
+    WIDTH, HEIGHT = TRACK.get_width(), TRACK.get_height()
+    SCREEN = pygame.display.set_mode((WIDTH, HEIGHT))
+    pygame.display.set_caption("racing sim")
+    return SCREEN,WIDTH, HEIGHT
 
 FPS = 60
 
-#draws images onto screen
-def draw(screen, images, player):
+    #draws images onto screen
+def draw(screen, images, cars, generation):
     for img, pos in images:
         screen.blit(img, pos)
 
-    player.draw_car(screen)
+    for car in cars:
+        car.draw_car(screen)
+
     pygame.display.update()
+
 
 def move_car(player):
     keys = pygame.key.get_pressed()
@@ -47,117 +55,115 @@ def move_car(player):
     if not moving:
         player.decelerate()
 
-
+    # run = True
+    # clock = pygame.time.Clock()
+    # images = [(GRASS, (0,0)), (TRACK, (0,0)), (FINISH, FINISH_POS), (BORDER, (0,0))]
+    # player = Car(8,3)
+    #
+    #
+    # while run:
+    #     clock.tick(FPS)
+    #
+    #     draw(SCREEN, images, player)
+    #     pygame.display.update()
+    #     for event in pygame.event.get():
+    #         if event.type == pygame.QUIT:
+    #             run = False
+    #             break
+    #
+    #     move_car(player)
+    #     player.check_collision(BORDER_MASK,FINISH_MASK,FINISH_POS)
+    # pygame.quit()
 
 def eval_genomes(genomes, config):
-    run = True
-    clock = pygame.time.Clock()
+    SCREEN, WIDTH, HEIGHT = initialize()
     images = [(GRASS, (0, 0)), (TRACK, (0, 0)), (FINISH, FINISH_POS), (BORDER, (0, 0))]
-    players = []
-
     nets = []
+    cars = []
+
     for genome_id, genome in genomes:
         net = neat.nn.FeedForwardNetwork.create(genome, config)
         nets.append(net)
+        cars.append(Car(8,3))
         genome.fitness = 0
-        players.append(Car(8, 3))
 
-    while run:
+    clock = pygame.time.Clock()
+    generation_font = pygame.font.SysFont("Arial", 30)
+    alive_font = pygame.font.SysFont("Arial", 20)
+
+    global current_gen
+    current_gen += 1
+
+    counter = 0
+
+    while len(cars) > 0 and counter <= 1000:
         clock.tick(FPS)
-
+        counter += 1
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                run = False
                 pygame.quit()
-                quit()
+                sys.exit()
 
-        for i, player in enumerate(players):
-            # Get radar distances and points
-            radars = player.get_radars(BORDER_MASK)
+        for car in cars:
+            car.draw_car(SCREEN)
 
-            # Create the 5 inputs: velocity, angle, and 3 radar distances
-            inputs = [
-                player.vel,                # Velocity
-                player.angle,              # Angle
-                radars[0],                 # Front radar distance
-                radars[1],                 # Left radar distance
-                radars[2],                 # Right radar distance
-            ]
+        for i, car in enumerate(cars):
+            output = nets[i].activate(car.get_data())
+            choice = output.index(max(output))
+            if choice == 0:  # Left
+                car.angle += 10
+            elif choice == 1:  # Right
+                car.angle -= 10
+            elif choice == 2:  # Slow Down
+                if car.vel - 2 >= 12:
+                    car.vel -= 2
+            else:  # Speed Up
+                car.vel += 2
 
-            # Feed inputs to the neural network
-            output = nets[i].activate(inputs)
+        still_alive = 0
+        for i,car in enumerate(cars):
+            if car.is_alive():
+                still_alive += 1
+                car.update(BORDER_MASK,FINISH_MASK,FINISH_POS)
+                genomes[i][1].fitness += car.get_reward()
+        if still_alive == 0:
+            break
+        counter += 1
+        if counter == 30 * 40:
+            break
 
-            # Control car based on output
-            if output[0] > 0.5:  # Accelerate
-                player.accelerate()
-            if output[1] > 0.5:  # Brake/Move backward
-                player.backwards()
-            if output[2] > 0.5:  # Turn left
-                player.rotate(left=True)
-            if output[3] > 0.5:  # Turn right
-                player.rotate(right=True)
+        draw(SCREEN, images, cars, current_gen)
+        for car in cars:
+            if car.is_alive():
+                car.draw(SCREEN)
 
-            # Fitness evaluation
-            genomes[i][1].fitness += 1  # Increase fitness for staying alive
+        text = generation_font.render("Generation: " + str(current_gen), True, (0, 0, 0))
+        text_rect = text.get_rect()
+        text_rect.center = (900, 450)
+        SCREEN.blit(text, text_rect)
 
-            # Penalize collisions
-            if player.collide(BORDER_MASK) is not None:
-                genomes[i][1].fitness -= 5
-                players.pop(i)
-                nets.pop(i)
-                break
+        text = alive_font.render("Still Alive: " + str(still_alive), True, (0, 0, 0))
+        text_rect = text.get_rect()
+        text_rect.center = (900, 490)
+        SCREEN.blit(text, text_rect)
 
-        # Draw everything on the screen
-        for player in players:
-            draw(SCREEN, images, player)
-
-        pygame.display.update()
+        pygame.display.flip()
 
 
-def run_neat(config_file):
-    config = neat.Config(
-        neat.DefaultGenome, neat.DefaultReproduction,
-        neat.DefaultSpeciesSet, neat.DefaultStagnation, config_file
-    )
+if __name__ == "__main__":
+        # Load Config
+    config_path = "./config.txt"
+    config = neat.config.Config(neat.DefaultGenome,
+                                    neat.DefaultReproduction,
+                                    neat.DefaultSpeciesSet,
+                                    neat.DefaultStagnation,
+                                    config_path)
 
+        # Create Population And Add Reporters
     population = neat.Population(config)
     population.add_reporter(neat.StdOutReporter(True))
     stats = neat.StatisticsReporter()
     population.add_reporter(stats)
 
-    winner = population.run(eval_genomes, 50)  # Run for 50 generations
-
-    print("Best genome:\n", winner)
-
-if __name__ == "__main__":
-    local_dir = os.path.dirname(__file__)
-    config_path = os.path.join(local_dir, "config.txt")
-    run_neat(config_path)
-# run = True
-# clock = pygame.time.Clock()
-# images = [(GRASS, (0,0)), (TRACK, (0,0)), (FINISH, FINISH_POS), (BORDER, (0,0))]
-# player = Car(8,3)
-#
-#
-# while run:
-#     clock.tick(FPS)
-#
-#     draw(SCREEN, images, player)
-#     pygame.display.update()
-#     for event in pygame.event.get():
-#         if event.type == pygame.QUIT:
-#             run = False
-#             break
-#
-#     move_car(player)
-#
-#     if player.collide(BORDER_MASK) != None:
-#         player.bounce()
-#     finish_poi_collide = player.collide(FINISH_MASK, *FINISH_POS)
-#     if finish_poi_collide != None:
-#          if finish_poi_collide[1] == 0:
-#              player.bounce()
-#          else:
-#              player.reset()
-#              print("finsish")
-# pygame.quit()
+        # Run Simulation For A Maximum of 1000 Generations
+    population.run(eval_genomes, 1000)
