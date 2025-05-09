@@ -18,7 +18,7 @@ def rotate_center(win, image, top_left, angle):
 CAR = scale(pygame.image.load("imgs/car.png"), 0.07)
 GRASS = scale(pygame.image.load("imgs/BLACK.png"), 2.5)
 TRACK = scale(pygame.image.load("imgs/track.png"), 0.9)
-BORDER = scale(pygame.image.load("imgs/track-border.png"), 0.9)
+BORDER = scale(pygame.image.load("imgs/track-border1.png"), 0.9)
 BORDER_MASK = pygame.mask.from_surface(BORDER)
 FINISH = pygame.image.load("imgs/finish.png")
 FINISH_MASK = pygame.mask.from_surface(FINISH)
@@ -34,13 +34,11 @@ CHECKPOINTS = [
     pygame.Rect(234, 653, 30, 30),
     pygame.Rect(322, 712, 30, 30),
     pygame.Rect(387, 689, 30, 30),
-    # pygame.Rect(384, 620, 30, 30),
     pygame.Rect(394, 560, 30, 30),
-    # pygame.Rect(435, 500, 30, 30),
     pygame.Rect(490, 468, 30, 30),
     pygame.Rect(575, 510, 30, 30),
     pygame.Rect(581, 585, 30, 30),
-    pygame.Rect(600, 659, 30, 30),
+    pygame.Rect(580, 659, 30, 30),
     pygame.Rect(655, 707, 30, 30),
     pygame.Rect(730, 485, 30, 30),
     pygame.Rect(715, 380, 30, 30),

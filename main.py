@@ -8,7 +8,7 @@ import math
 
 GRASS = scale(pygame.image.load("imgs/BLACK.png"), 2.5)
 TRACK = scale(pygame.image.load("imgs/track.png"), 0.9)
-BORDER = scale(pygame.image.load("imgs/track-border.png"), 0.9)
+BORDER = scale(pygame.image.load("imgs/track-border1.png"), 0.9)
 BORDER_MASK = pygame.mask.from_surface(BORDER)
 FINISH = pygame.image.load("imgs/finish.png")
 FINISH_MASK = pygame.mask.from_surface(FINISH)

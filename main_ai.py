@@ -75,14 +75,13 @@ def eval_genomes(genomes, config, generation):
         for img, pos in images:
             WIN.blit(img, pos)
 
-        for checkpoint in CHECKPOINTS:
-            pygame.draw.rect(WIN, (0, 0, 255), checkpoint, 2)
+        # for checkpoint in CHECKPOINTS:
+        #     pygame.draw.rect(WIN, (0, 0, 255), checkpoint, 2)
 
         for i in reversed(range(len(cars))):
             car = cars[i]
             checkpoint_timers[i] += 1
             car.cast_radars(BORDER_MASK)
-            # car.draw_radars(WIN)
             inputs = [dist / 150 for dist in car.radar_data]
             output = nets[i].activate(inputs)
 
